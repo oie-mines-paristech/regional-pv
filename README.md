@@ -2,31 +2,44 @@
 
 Code to convert weather into regional photovoltaic estimates.
 
-## Quick Start
+## Background
+
+The code was originally developed as part of the [PhD research](https://kobra.uni-kassel.de/items/cbf2d921-2685-4143-b915-ed3033da902f)
+of Yves-Marie Saint Drenan at the University of Kassel, Germany.
+
+Following his move to Mines Paris PSL, Yves-Marie continued to enhance the
+codebase, applying it in several European research initiatives, including the
+[European Climate Energy Mixes (ECEM)](https://climate.copernicus.eu/european-climate-energy-mixes) in 2018
+and [Clim2Power](https://jpi-climate.eu/project/clim2power/) in 2020.
+
+Between 2022-2025, Rodrigo Amaro e Silva (ULisbon & Mines Paris – PSL) joined
+the development team, contributing to the integration of the code into the [Pan-European Climate Database (PECD)](https://climate.copernicus.eu/powering-europe-through-climate-uncertainty),
+funded by Copernicus Climate Change Services (C3S).
+
+## Workflow for users
+
+After cloning the repository, define it as your current directory.
+
+For best experience create a new conda environment (e.g. `regional-pv`) with Python 3.12:
+
+```
+conda create -n regional-pv -c conda-forge python=3.12
+conda activate regional-pv
+conda env create -f environment.yml
+pip install .
+```
+
+Then, in a Python script, import the package and run `spv_workflow`:
 
 ```python
->>> import regional_pv
+import regional_pv
 
+out = regional_pv.spv_workflow(...)
 ```
 
-## Workflow for developers/contributors
+## Publications
 
-For best experience create a new conda environment (e.g. DEVELOP) with Python 3.12:
-
-```
-conda create -n DEVELOP -c conda-forge python=3.12
-conda activate DEVELOP
-```
-
-Before pushing to GitHub, run the following commands:
-
-1. Update conda environment: `make conda-env-update`
-1. Install this package: `pip install -e .`
-1. Sync with the latest [template](https://github.com/ecmwf-projects/cookiecutter-conda-package) (optional): `make template-update`
-1. Run quality assurance checks: `make qa`
-1. Run tests: `make unit-tests`
-1. Run the static type checker: `make type-check`
-1. Build the documentation (see [Sphinx tutorial](https://www.sphinx-doc.org/en/master/tutorial/)): `make docs-build`
+TBD.
 
 ## License
 
