@@ -1,0 +1,17 @@
+# environment.yml: Mandatory dependencies only.
+channels:
+- conda-forge
+- nodefaults
+# EXAMPLE:
+# dependencies:
+# - package1
+# - package2
+# DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW AS SHOWN IN THE EXAMPLE
+dependencies:
+- xarray
+- numpy
+- scipy
+- netCDF4
+- pvlib==0.11.2
+- pip:
+  - sg2==2.3.3

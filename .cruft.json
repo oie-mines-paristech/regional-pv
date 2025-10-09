@@ -1,0 +1,20 @@
+{
+  "template": "https://github.com/ecmwf-projects/cookiecutter-conda-package",
+  "commit": "cb065f6f60080673ff8ed31925d8bc99b0dd9b6d",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "regional-pv",
+      "project_slug": "regional_pv",
+      "project_short_description": "Code to convert weather into regional photovoltaic estimates.",
+      "copyright_holder": "ARMINES",
+      "copyright_year": "2018-2025",
+      "mypy_strict": false,
+      "integration_tests": false,
+      "pypi": true,
+      "_template": "https://github.com/ecmwf-projects/cookiecutter-conda-package",
+      "_commit": "cb065f6f60080673ff8ed31925d8bc99b0dd9b6d"
+    }
+  },
+  "directory": null
+}
