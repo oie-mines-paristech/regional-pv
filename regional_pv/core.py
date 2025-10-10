@@ -46,7 +46,7 @@ def spv_workflow(
     t2m : np.ndarray
         2-m air temperature for a given location.
     meta : list
-        Three elements: latitude, longitude, and timestamp array.
+        Three elements: timestamp, longitude, and latitude np.ndarrays.
     azim : Optional[np.ndarray]
         Module azimuth to be considered (degrees, 180º: South, 90º East).
         None if tracking typology.
