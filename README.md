@@ -5,7 +5,7 @@ Code to convert weather into regional photovoltaic estimates.
 ## Background
 
 The code was originally developed as part of the [PhD research](https://kobra.uni-kassel.de/items/cbf2d921-2685-4143-b915-ed3033da902f)
-of Yves-Marie Saint Drenan at the University of Kassel, Germany.
+of Yves-Marie Saint Drenan at the Fraunhofer IWES and University of Kassel, Germany.
 
 Following his move to Mines Paris PSL, Yves-Marie continued to enhance the
 codebase, applying it in several European research initiatives, including the
@@ -39,7 +39,11 @@ out = regional_pv.spv_workflow(...)
 
 ## Publications
 
-TBD.
+Y.M. Saint-Drenan (2016), [A probabilistic approach to the estimation of regional photovoltaic power generation using meteorological data](https://kobra.uni-kassel.de/items/cbf2d921-2685-4143-b915-ed3033da902f), Universität Kassel, Fachbereich Elektrotechnik / Informatik.
+
+Y.M. Saint-Drenan et al. (2017), [A probabilistic approach to the estimation of regional photovoltaic power production](https://www.sciencedirect.com/science/article/abs/pii/S0038092X17301676), Solar Energy, doi: 10.1016/j.solener.2017.03.007
+
+Y.M. Saint-Drenan et al. (2018), [An approach for the estimation of the aggregated photovoltaic power generated in several European countries from meteorological data](https://asr.copernicus.org/articles/15/51/2018/), Advances in Science and Research, doi: 10.5194/asr-15-51-2018
 
 ## License
 
