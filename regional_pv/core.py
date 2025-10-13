@@ -30,7 +30,7 @@ def spv_workflow(
     azim: Optional[np.ndarray],
     tilt: Optional[np.ndarray],
     w_orient: Optional[np.ndarray],
-    th_coef: float,
+    k: float,
     dt_orig: int = 60,
     dt_downscale: int = 15,
 ) -> np.ndarray:
@@ -56,8 +56,8 @@ def spv_workflow(
     w_orient: Optional[np.ndarray]
         Weights for combining multiple module orientations.
         None if single orientation or tracking typology.
-    th_coef: float
-        PV thermal (Ross) coefficient.
+    k: float
+        PV Ross parameter.
     dt_orig : int
         Original time resolution of weather data.
         Default value assumes hourly data.
@@ -151,7 +151,7 @@ def spv_workflow(
     del ssrd, ssrd_daytime, ssrd_daytime_ds, decomp_out, astro_out
 
     # estimate PV module temperature, T2M must be in ºC
-    tmod = compute_Tmodule(t2m_daytime_ds, POA_dir + POA_dif + POA_ref, th_coef)
+    tmod = compute_Tmodule(t2m_daytime_ds, POA_dir + POA_dif + POA_ref, k)
     del t2m, t2m_daytime, t2m_daytime_ds
 
     # Calculates effective GTI, after accounting for optical losses

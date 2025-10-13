@@ -4,7 +4,7 @@ import numpy as np
 def compute_Tmodule(
     T2M_degC: np.ndarray,
     GTI: np.ndarray,
-    th_coef: float,
+    k: float,
 ) -> np.ndarray:
     """
     Estimate PV module temperature.
@@ -15,7 +15,7 @@ def compute_Tmodule(
         2-m high air temperature, must be in degrees Celsius.
     GTI : np.ndarray
         Global tilted irradiance, in W.m-2.
-    th_coef: float
+    k: float
         PV thermal (Ross) coefficient.
 
     Returns
@@ -25,7 +25,7 @@ def compute_Tmodule(
 
     """
     # Calculation of the module temperature
-    Tmod = T2M_degC + th_coef / 1000 * GTI
+    Tmod = T2M_degC + k / 1000 * GTI
 
     return Tmod
 
