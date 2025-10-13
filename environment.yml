@@ -8,7 +8,6 @@ channels:
 # - package2
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW AS SHOWN IN THE EXAMPLE
 dependencies:
-- python=3.12
 - pip
 - xarray
 - numpy
