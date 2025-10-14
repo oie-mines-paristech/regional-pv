@@ -25,7 +25,7 @@ For best experience create a new conda environment (e.g. `regional-pv`) with Pyt
 ```
 conda create -n regional-pv -c conda-forge python=3.12
 conda activate regional-pv
-conda env create -f environment.yml
+conda env update -f environment.yml
 pip install .
 ```
 
