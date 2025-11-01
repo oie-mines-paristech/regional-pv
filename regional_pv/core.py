@@ -82,15 +82,27 @@ def spv_workflow(
     # to shape final output variable
     n_datapoints = ssrd.shape[0]
 
-    # filters night values except last/first sunrise/sunset moment of each day
-    # also prepares downscaled night-ignoring time vector
-    ix_day, ssrd_daytime, t2m_daytime, time__, time_day_ds = night_filter(
-        ssrd, t2m, time_, dt_orig, dt_downscale
-    )
+    if dt_orig < 24 * 60:  # for sub-daily data
+        # filters night values except last/first sunrise/sunset moment of each day
+        # also prepares downscaled night-ignoring time vector
+        ix_day, ssrd_daytime, t2m_daytime, time__, time_day_ds = night_filter(
+            ssrd, t2m, time_, dt_orig, dt_downscale
+        )
 
-    # calculates solar position and top of atmosphere (TOA) radiation
-    # for downscaled temporal resolution
-    astro_out = astro_calc(lon, lat, time_day_ds)
+        # calculates solar position and top of atmosphere (TOA) radiation
+        # for downscaled temporal resolution
+        astro_out = astro_calc(lon, lat, time_day_ds)
+
+    else:
+        time_ds = np.arange(
+            time_[0] + np.timedelta64(-24, "h"),
+            time_[-1],
+            np.timedelta64(15, "m"),
+        )
+
+        # calculates solar position and top of atmosphere (TOA) radiation
+        # for downscaled temporal resolution
+        astro_out = astro_calc(lon, lat, time_ds)
 
     # downscales ssrd in time by linear interpolation of clearness index (Kt)
     # also outputs downscaled Kt to use later

@@ -6,7 +6,7 @@ import pvlib as pvlib  # type: ignore
 
 def ssrd_downscale(
     ssrd: np.ndarray,
-    TOA_h: np.ndarray,
+    TOA_h_ds: np.ndarray,
     dt_orig: int,
     dt_downscale: int,
 ) -> Tuple[np.ndarray, np.ndarray]:
@@ -15,13 +15,13 @@ def ssrd_downscale(
 
     Parameters
     ----------
-    ssrd : np.ndarray
+    ssrd: np.ndarray
         Surface solar radiation downwelling.
-    TOA_h : np.ndarray
-        Top of Atmosphere horizontal irradiance, before impact of atmosphere.
-    dt_orig : int
+    TOA_h_ds: np.ndarray
+        Top of Atmosphere horizontal irradiance for downscaled time resolution.
+    dt_orig: int
         Original time resolution, in minutes.
-    dt_downscale : int
+    dt_downscale: int
         Finer resolution to which data is downscaled.
 
     Returns
@@ -32,28 +32,32 @@ def ssrd_downscale(
         Clearness index, which is used when processing ssrd later on.
 
     """
-    # downscaling factor
-    n_reps = dt_orig // dt_downscale
+    # downscaling factor (e.g., 4 when 60 » 15 minutes)
+    # used to average back to original resolution and for downscaling below
+    ds_f = dt_orig // dt_downscale
 
-    # reshape to easily calculate hourly averages
-    TOA_h_hourly = TOA_h.reshape(-1, n_reps).mean(axis=1).reshape(-1, 1)
+    # adjust to original time resolution. mean, since TOA is flux (W.m-2)
+    TOA_h_orig = TOA_h_ds.reshape(-1, ds_f).mean(axis=1).reshape(-1, 1)
 
-    TOA_h_hourly[TOA_h_hourly == 0] = np.nan
-    Kt = ssrd / TOA_h_hourly
+    # if sub-daily, ignore night to avoid inf by /0
+    if dt_orig < 24 * 60:
+        TOA_h_orig[TOA_h_orig == 0] = np.nan
+
+    Kt = ssrd / TOA_h_orig
     Kt = np.where(Kt > 1, 1, Kt)
     Kt[np.isinf(Kt)] = np.nan
 
     # Kt is assumed to be constant in each hour
     # TOA_h captures the daily cycle at higher resolution
-    Kt = np.repeat(Kt, 4, axis=0)
-    ssrd_ds = Kt * TOA_h
+    Kt_ds = np.repeat(Kt, ds_f, axis=0)
+    ssrd_ds = Kt_ds * TOA_h_ds
 
     ssrd_ds[np.isnan(ssrd_ds)] = 0
 
     # makes later calculations + efficient, nan will correspond to nightime
-    Kt[ssrd_ds == 0] = np.nan
+    Kt_ds[ssrd_ds == 0] = np.nan
 
-    return ssrd_ds, Kt
+    return ssrd_ds, Kt_ds
 
 
 def ssrd_decompose(ssrd: np.ndarray, Kt: np.ndarray, SEL: np.ndarray) -> dict:
