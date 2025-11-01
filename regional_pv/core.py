@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import pvlib  # type: ignore
@@ -31,7 +31,7 @@ def spv_workflow(
     tilt: Optional[np.ndarray],
     w_orient: Optional[np.ndarray],
     k: float,
-    dt_orig: int = 60,
+    dt_orig: Union[int, dict] = 60,
     dt_downscale: int = 15,
 ) -> np.ndarray:
     """
@@ -59,8 +59,9 @@ def spv_workflow(
     k: float
         PV Ross parameter.
     dt_orig : int
-        Original time resolution of weather data.
-        Default value assumes hourly data.
+        Original time resolution of weather data, in minutes. Can be dictionary
+        if ssrd and t2m differ.
+        Default value assumes 1 hour (60).
     dt_downscale : int
         Finer resolution to which the data is downscaled to better capture
         intra-day losses (mainly optical and thermal).
@@ -79,14 +80,27 @@ def spv_workflow(
     lon = meta[1]
     lat = meta[2]
 
+    if isinstance(dt_orig, int):
+        dt_orig_ssrd = dt_orig
+        dt_orig_t2m = dt_orig
+    elif isinstance(dt_orig, dict):
+        # checks if dict has proper keys
+        msg = "dict keys must contain ssrd and t2m."
+        assert {"ssrd", "t2m"}.issubset(dt_orig), msg
+
+        dt_orig_ssrd = dt_orig["ssrd"]
+        dt_orig_t2m = dt_orig["t2m"]
+    else:
+        raise TypeError("dt_orig must be either int or dict.")
+
     # to shape final output variable
     n_datapoints = ssrd.shape[0]
 
-    if dt_orig < 24 * 60:  # for sub-daily data
+    if dt_orig_ssrd < 24 * 60:  # for sub-daily data
         # filters night values except last/first sunrise/sunset moment of each day
         # also prepares downscaled night-ignoring time vector
         ix_day, ssrd_daytime, t2m_daytime, time__, time_day_ds = night_filter(
-            ssrd, t2m, time_, dt_orig, dt_downscale
+            ssrd, t2m, time_, dt_orig_ssrd, dt_downscale
         )
 
         # calculates solar position and top of atmosphere (TOA) radiation
@@ -107,11 +121,11 @@ def spv_workflow(
     # downscales ssrd in time by linear interpolation of clearness index (Kt)
     # also outputs downscaled Kt to use later
     ssrd_daytime_ds, tKT = ssrd_downscale(
-        ssrd_daytime, astro_out["TOA_h"], dt_orig, dt_downscale
+        ssrd_daytime, astro_out["TOA_h"], dt_orig_ssrd, dt_downscale
     )
 
     # T2M temporal downscale
-    t2m_daytime_ds = downscale_t2m(t2m_daytime, dt_orig, dt_downscale)
+    t2m_daytime_ds = downscale_t2m(t2m_daytime, dt_orig_t2m, dt_downscale)
 
     # once downscaling is done, we can fully ignore nighttime
     ix_day_ds = ssrd_daytime_ds.flatten() > 0
