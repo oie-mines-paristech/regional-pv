@@ -23,7 +23,6 @@ from regional_pv.utils.support_functions import (
 
 
 def spv_workflow(
-    pv_type: str,
     ssrd: np.ndarray,
     t2m: np.ndarray,
     meta: list,
@@ -31,6 +30,7 @@ def spv_workflow(
     tilt: Optional[np.ndarray],
     w_orient: Optional[np.ndarray],
     k: float,
+    tracking: int,
     dt_orig: Union[int, dict] = 60,
     dt_downscale: int = 15,
 ) -> np.ndarray:
@@ -39,8 +39,6 @@ def spv_workflow(
 
     Parameters
     ----------
-    pv_type: str
-        IDs PV typology being computed.
     ssrd : np.ndarray
         Surface solar radiation downwelling for a given location.
     t2m : np.ndarray
@@ -58,6 +56,8 @@ def spv_workflow(
         None if single orientation or tracking typology.
     k: float
         PV Ross parameter.
+    tracking: int
+        Defines if installation is fixed (0), HSAT (1), or 2-axis (2).
     dt_orig : int
         Original time resolution of weather data, in minutes. Can be dictionary
         if ssrd and t2m differ.
@@ -136,7 +136,7 @@ def spv_workflow(
     t2m_daytime_ds = t2m_daytime_ds[ix_day_ds, :]
 
     # TODO: define in global, read it in main, adapt for 1D, 2D, 3D cases
-    if pv_type == "utility_track_1axis":
+    if tracking == 1:
         out = pvlib.tracking.singleaxis(
             astro_out["SZA"].flatten(),
             astro_out["SAZ"].flatten(),
@@ -149,18 +149,20 @@ def spv_workflow(
         # in non-tracking this is global (so not explicit input of function)
         tilt_ = out["surface_tilt"].reshape(-1, 1)
         azim_ = out["surface_azimuth"].reshape(-1, 1)
+    elif tracking == 2:
+        raise ValueError("For the moment, only 1-axis tracking is allowed.")
+
+        # prep code for/if when 2-axis tracking is included
+        # elif tracking == 1:
+        # TODO: check if reshape is needed
+        # TODO: check if 2-axis often uses backtracking and operational constraints
+        # pv_tilt = astro_out['SZA'].reshape(-1,1)
+        # pv_azim = astro_out['SAZ'].reshape(-1,1)
+        # aoi = out['aoi'].reshape(-1,1)
+
     else:
         tilt_ = tilt
         azim_ = azim
-        # aoi = out['aoi'].reshape(-1,1)
-
-    # prep code for/if when 2-axis tracking is included
-    # elif pv_type == 'utility_track_2axis':
-    # TODO: check if reshape is needed
-    # TODO: check if 2-axis often uses backtracking and operational constraints
-    # pv_tilt = astro_out['SZA'].reshape(-1,1)
-    # pv_azim = astro_out['SAZ'].reshape(-1,1)
-    # aoi = out['aoi'].reshape(-1,1)
 
     # infers diffuse and direct components from global irradiance
     decomp_out = ssrd_decompose(
