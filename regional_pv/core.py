@@ -107,7 +107,20 @@ def spv_workflow(
         # for downscaled temporal resolution
         astro_out = astro_calc(lon, lat, time_day_ds)
 
+        # downscales ssrd in time by linear interpolation of clearness index (Kt)
+        # also outputs downscaled Kt to use later
+        ssrd_daytime_ds, tKT = ssrd_downscale(
+            ssrd_daytime, astro_out["TOA_h"], dt_orig_ssrd, dt_downscale
+        )
+
+        # T2M temporal downscale
+        t2m_daytime_ds = downscale_t2m(t2m_daytime, dt_orig_t2m, dt_downscale)
+
+        del ssrd_daytime, t2m_daytime
+
     else:
+        n_datapoints = n_datapoints * dt_orig_ssrd // 60
+
         time_ds = np.arange(
             time_[0] + np.timedelta64(-24, "h"),
             time_[-1],
@@ -118,14 +131,37 @@ def spv_workflow(
         # for downscaled temporal resolution
         astro_out = astro_calc(lon, lat, time_ds)
 
-    # downscales ssrd in time by linear interpolation of clearness index (Kt)
-    # also outputs downscaled Kt to use later
-    ssrd_daytime_ds, tKT = ssrd_downscale(
-        ssrd_daytime, astro_out["TOA_h"], dt_orig_ssrd, dt_downscale
-    )
+        # downscales ssrd in time by linear interpolation of clearness index (Kt)
+        # also outputs downscaled Kt to use later
+        ssrd_ds, tKT = ssrd_downscale(
+            ssrd, astro_out["TOA_h"], dt_orig_ssrd, dt_downscale
+        )
 
-    # T2M temporal downscale
-    t2m_daytime_ds = downscale_t2m(t2m_daytime, dt_orig_t2m, dt_downscale)
+        # T2M temporal downscale
+        t2m_ds = downscale_t2m(t2m, dt_orig_t2m, dt_downscale)
+
+        # reshape into hourly blocks (4 values per hour)
+        # identify blocks where all values are not zero
+        mask = ~(ssrd_ds.reshape(-1, 4) == 0).all(axis=1)
+
+        # get indices of blocks to keep
+        ix_day = np.where(mask)[0]
+
+        # convert block indices to original indices
+        ix_day_ds = np.concatenate(
+            [np.arange(i * 4, i * 4 + 4) for i in ix_day]
+        )
+
+        # Filter out blocks where all values are zero
+        ssrd_daytime_ds = ssrd_ds[ix_day_ds]
+        tKT = tKT[ix_day_ds]
+        t2m_daytime_ds = t2m_ds[ix_day_ds]
+        time_daytime_ds = time_ds[ix_day_ds]
+
+        # recompute for daytime subsample
+        astro_out = astro_calc(lon, lat, time_daytime_ds)
+
+    del ssrd, t2m
 
     # once downscaling is done, we can fully ignore nighttime
     ix_day_ds = ssrd_daytime_ds.flatten() > 0
@@ -176,11 +212,11 @@ def spv_workflow(
     POA_aoi, POA_dir, POA_dif, POA_ref = irrad_transpose(
         tilt_, azim_, ssrd_daytime_ds, decomp_out, astro_out
     )
-    del ssrd, ssrd_daytime, ssrd_daytime_ds, decomp_out, astro_out
+    del ssrd_daytime_ds, decomp_out, astro_out
 
     # estimate PV module temperature, T2M must be in ºC
     tmod = compute_Tmodule(t2m_daytime_ds, POA_dir + POA_dif + POA_ref, k)
-    del t2m, t2m_daytime, t2m_daytime_ds
+    del t2m_daytime_ds
 
     # Calculates effective GTI, after accounting for optical losses
     GTI_eff = account_optical_losses(tilt_, POA_aoi, POA_dif, POA_dir, POA_ref)
